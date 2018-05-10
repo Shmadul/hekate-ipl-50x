@@ -339,14 +339,14 @@ static int _config(launch_ctxt_t *ctxt, ini_sec_t *cfg)
 	return 1;
 }
 
-int hos_launch(ini_sec_t *cfg)
+int hos_launch() 
 {
 	launch_ctxt_t ctxt;
 	memset(&ctxt, 0, sizeof(launch_ctxt_t));
 	list_init(&ctxt.kip1_list);
 
-	if (cfg && !_config(&ctxt, cfg))
-		return 0;
+    _config_kip1(&ctxt, "loader.kip1");
+    _config_kip1(&ctxt, "sm.kip1");
 
 	//Read package1 and the correct keyblob.
 	if (!_read_emmc_pkg1(&ctxt))

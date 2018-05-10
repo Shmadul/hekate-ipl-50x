@@ -7,7 +7,7 @@ LD = $(DEVKITARM)/bin/arm-none-eabi-ld
 OBJCOPY = $(DEVKITARM)/bin/arm-none-eabi-objcopy
 
 TARGET := ipl
-BUILD := build_ipl
+BUILD := ipl
 SOURCEDIR := ipl
 OBJS = $(addprefix $(BUILD)/, \
 	start.o \

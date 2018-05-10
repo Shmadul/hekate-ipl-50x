@@ -589,61 +589,38 @@ void dump_emmc_rawnand() { dump_emmc_selected(DUMP_RAW); }
 
 void launch_firmware()
 {
-	ini_sec_t *cfg_sec = NULL;
-	LIST_INIT(ini_sections);
+    ini_sec_t *cfg_sec = NULL;
+    LIST_INIT(ini_sections);
+
+static const char switchblade[] =
+	"   _____         _ __       __    ____  __          __   \n\n"
+	"  / ___/      __(_) /______/ /_  / __ )/ /___ _____/ /__ \n\n"
+	"  \\__ \\ | /| / / / __/ ___/ __ \\/ __  / / __ `/ __  / _ \'\n\n"
+	" ___/ / |/ |/ / / /_/ /__/ / / / /_/ / / /_/ / /_/ /  __/\n\n"
+	"/____/|__/|__/_/\\__/\\___/_/ /_/_____/_/\\__,_/\\__,_/\\___/ \n\n"
+	" - v1.0 Wicked Fast Hekate Booter Payload (@StevenMattera & @shmadul)\n\n";
 
 	gfx_clear(&gfx_ctxt, 0xFF000000);
 	gfx_con_setpos(&gfx_con, 0, 0);
 
-	if (sd_mount())
-	{
-		if (ini_parse(&ini_sections, "hekate_ipl.ini"))
-		{
-			//Build configuration menu.
-			ment_t *ments = (ment_t *)malloc(sizeof(ment_t) * 16);
-			ments[0].type = MENT_BACK;
-			ments[0].caption = "Back";
-			u32 i = 1;
-			LIST_FOREACH_ENTRY(ini_sec_t, ini_sec, &ini_sections, link)
-			{
-				if (!strcmp(ini_sec->name, "config"))
-					continue;
-				ments[i].type = MENT_CHOICE;
-				ments[i].caption = ini_sec->name;
-				ments[i].data = ini_sec;
-				i++;
-			}
-			if (i > 1)
-			{
-				memset(&ments[i], 0, sizeof(ment_t));
-				menu_t menu = {
-					ments, "Launch configurations", 0, 0
-				};
-				cfg_sec = (ini_sec_t *)tui_do_menu(&gfx_con, &menu);
-				if (!cfg_sec)
-					return;
-			}
-			else
-				gfx_printf(&gfx_con, "%kNo launch configurations found.%k\n", 0xFF0000FF, 0xFFFFFFFF);
-			free(ments);
-		}
-		else
-			gfx_printf(&gfx_con, "%kFailed to load 'hekate_ipl.ini'.%k\n", 0xFF0000FF, 0xFFFFFFFF);
-	}
-	else
-		gfx_printf(&gfx_con, "%kFailed to mount SD card (make sure that it is inserted).%k\n", 0xFF0000FF, 0xFFFFFFFF);
+	gfx_printf(&gfx_con, switchblade, 0xFFFFCC00, 0xFFFFFFFF, 
+		0xFFFFCC00, 0xFFCCFF00, 0xFFFFCC00, 0xFFFFFFFF);
+	sleep(1.25);
 
-	if (!cfg_sec)
-		gfx_printf(&gfx_con, "Using default launch configuration.\n");
+    if (sd_mount())
+    {
+        if (!hos_launch())
+            gfx_printf(&gfx_con, "%kFailed to launch firmware.%k\n", 0xFF0000FF, 0xFFFFFFFF);
+    }
+    else
+        gfx_printf(&gfx_con, "%kFailed to mount SD card (make sure that it is inserted).%k\n", 0xFF0000FF, 0xFFFFFFFF);
 
-	if (!hos_launch(cfg_sec))
-		gfx_printf(&gfx_con, "%kFailed to launch firmware.%k\n", 0xFF0000FF, 0xFFFFFFFF);
-
-	//TODO: free ini.
+    if (!cfg_sec)
+        gfx_printf(&gfx_con, "Using default launch configuration.\n");
 
 out:;
-	sleep(200000);
-	btn_wait();
+    sleep(200000);
+    btn_wait();
 }
 
 void about()
@@ -747,7 +724,7 @@ void ipl_main()
 	gfx_con_init(&gfx_con, &gfx_ctxt);
 
 	while (1)
-		tui_do_menu(&gfx_con, &menu_top);
+		launch_firmware();
 
 	while (1)
 		;

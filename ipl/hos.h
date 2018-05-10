@@ -20,6 +20,6 @@
 #include "types.h"
 #include "ini.h"
 
-int hos_launch(ini_sec_t *cfg);
+int hos_launch();
 
 #endif
