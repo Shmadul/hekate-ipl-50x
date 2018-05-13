@@ -1,3 +1,5 @@
 .vs
 .vscode
-build_ipl/*
+build/*.o
+build/*.elf
+build/bin/ipl

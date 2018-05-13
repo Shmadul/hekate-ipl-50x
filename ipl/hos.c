@@ -265,42 +265,6 @@ out:;
 	return res;
 }
 
-static int _config_warmboot(launch_ctxt_t *ctxt, const char *value)
-{
-	FIL fp;
-	if (f_open(&fp, value, FA_READ) != FR_OK)
-		return 0;
-	ctxt->warmboot_size = f_size(&fp);
-	ctxt->warmboot = malloc(ctxt->warmboot_size);
-	f_read(&fp, ctxt->warmboot, ctxt->warmboot_size, NULL);
-	f_close(&fp);
-	return 1;
-}
-
-static int _config_secmon(launch_ctxt_t *ctxt, const char *value)
-{
-	FIL fp;
-	if (f_open(&fp, value, FA_READ) != FR_OK)
-		return 0;
-	ctxt->secmon_size = f_size(&fp);
-	ctxt->secmon = malloc(ctxt->secmon_size);
-	f_read(&fp, ctxt->secmon, ctxt->secmon_size, NULL);
-	f_close(&fp);
-	return 1;
-}
-
-static int _config_kernel(launch_ctxt_t *ctxt, const char *value)
-{
-	FIL fp;
-	if (f_open(&fp, value, FA_READ) != FR_OK)
-		return 0;
-	ctxt->kernel_size = f_size(&fp);
-	ctxt->kernel = malloc(ctxt->kernel_size);
-	f_read(&fp, ctxt->kernel, ctxt->kernel_size, NULL);
-	f_close(&fp);
-	return 1;
-}
-
 static int _config_kip1(launch_ctxt_t *ctxt, const char *value)
 {
 	FIL fp;
@@ -312,30 +276,6 @@ static int _config_kip1(launch_ctxt_t *ctxt, const char *value)
 DPRINTF("loaded kip from SD (size %08X)\n", f_size(&fp));
 	f_close(&fp);
 	list_append(&ctxt->kip1_list, &mkip1->link);
-	return 1;
-}
-
-typedef struct _cfg_handler_t
-{
-	const char *key;
-	int (*handler)(launch_ctxt_t *ctxt, const char *value);
-} cfg_handler_t;
-
-static const cfg_handler_t _config_handlers[] = {
-	{ "warmboot", _config_warmboot },
-	{ "secmon", _config_secmon },
-	{ "kernel", _config_kernel },
-	{ "kip1", _config_kip1 },
-	{ NULL, NULL },
-};
-
-static int _config(launch_ctxt_t *ctxt, ini_sec_t *cfg)
-{
-	LIST_FOREACH_ENTRY(ini_kv_t, kv, &cfg->kvs, link)
-		for(u32 i = 0; _config_handlers[i].key; i++)
-			if (!strcmp(_config_handlers[i].key, kv->key) &&
-				!_config_handlers[i].handler(ctxt, kv->val))
-				return 0;
 	return 1;
 }
 

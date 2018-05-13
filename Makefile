@@ -7,12 +7,12 @@ LD = $(DEVKITARM)/bin/arm-none-eabi-ld
 OBJCOPY = $(DEVKITARM)/bin/arm-none-eabi-objcopy
 
 TARGET := ipl
-BUILD := ipl
+BUILD := build
+BUILD_BINARY := build/bin
 SOURCEDIR := ipl
 OBJS = $(addprefix $(BUILD)/, \
 	start.o \
 	main.o \
-	btn.o \
 	clock.o \
 	cluster.o \
 	fuse.o \
@@ -20,7 +20,6 @@ OBJS = $(addprefix $(BUILD)/, \
 	heap.o \
 	hos.o \
 	i2c.o \
-	kfuse.o \
 	lz.o \
 	max7762x.o \
 	mc.o \
@@ -29,7 +28,6 @@ OBJS = $(addprefix $(BUILD)/, \
 	sdmmc_driver.o \
 	sdram.o \
 	sdram_lp0.o \
-	tui.o \
 	util.o \
 	di.o \
 	gfx.o \
@@ -39,7 +37,6 @@ OBJS = $(addprefix $(BUILD)/, \
 	se.o \
 	tsec.o \
 	uart.o \
-	ini.o \
 )
 OBJS += $(addprefix $(BUILD)/, diskio.o ff.o ffunicode.o)
 
@@ -49,14 +46,14 @@ LDFLAGS = $(ARCH) -nostartfiles -lgcc -Wl,--nmagic,--gc-sections
 
 .PHONY: all clean
 
-all: $(BUILD)/$(TARGET)
+all: $(BUILD_BINARY)/$(TARGET)
 
 clean:
 	@rm -rf $(OBJS)
 	@rm -rf $(BUILD)/$(TARGET).elf
-	@rm -rf $(BUILD)/$(TARGET)
+	@rm -rf $(BUILD_BINARY)/$(TARGET)
 
-$(BUILD)/$(TARGET): $(BUILD)/$(TARGET).elf
+$(BUILD_BINARY)/$(TARGET): $(BUILD)/$(TARGET).elf
 	$(OBJCOPY) -S -O binary $< $@
 
 $(BUILD)/$(TARGET).elf: $(OBJS)
