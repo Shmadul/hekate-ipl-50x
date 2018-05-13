@@ -18,7 +18,6 @@
 #define _HOS_H_
 
 #include "types.h"
-#include "ini.h"
 
 int hos_launch();
 
