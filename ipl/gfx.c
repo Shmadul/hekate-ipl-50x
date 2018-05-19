@@ -17,6 +17,8 @@
 #include <stdarg.h>
 #include "gfx.h"
 
+#define DEBUG 0
+
 static const u8 _gfx_font[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x30, 0x30, 0x18, 0x18, 0x00, 0x0C, 0x00,
 	0x00, 0x22, 0x22, 0x22, 0x00, 0x00, 0x00, 0x00, 0x00, 0x66, 0x66, 0xFF, 0x66, 0xFF, 0x66, 0x66,
@@ -183,6 +185,7 @@ static void _gfx_putn(gfx_con_t *con, u32 v, int base, char fill, int fcnt)
 
 void gfx_printf(gfx_con_t *con, const char *fmt, ...)
 {
+	#if DEBUG == 1
 	va_list ap;
 	int fill, fcnt;
 
@@ -250,6 +253,7 @@ void gfx_printf(gfx_con_t *con, const char *fmt, ...)
 
 	out:
 	va_end(ap);
+	#endif
 }
 
 void gfx_hexdump(gfx_con_t *con, u32 base, const u8 *buf, u32 len)

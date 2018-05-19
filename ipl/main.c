@@ -39,6 +39,8 @@
 #include "se_t210.h"
 #include "hos.h"
 
+const int splash_size = 3932169;
+
 void config_oscillators()
 {
 	CLOCK(CLK_RST_CONTROLLER_SPARE_REG0) = CLOCK(CLK_RST_CONTROLLER_SPARE_REG0) & 0xFFFFFFF3 | 4;
@@ -238,32 +240,24 @@ int sd_mount()
 	return 0;
 }
 
-void print_header() {
-	static const char switchblade[] =
-		"   _____         _ __       __    ____  __          __   \n\n"
-		"  / ___/      __(_) /______/ /_  / __ )/ /___ _____/ /__ \n\n"
-		"  \\__ \\ | /| / / / __/ ___/ __ \\/ __  / / __ `/ __  / _ \'\n\n"
-		" ___/ / |/ |/ / / /_/ /__/ / / / /_/ / / /_/ / /_/ /  __/\n\n"
-		"/____/|__/|__/_/\\__/\\___/_/ /_/_____/_/\\__,_/\\__,_/\\___/ \n\n"
-		" - v1.0 Wicked Fast Hekate Booter Payload (@StevenMattera & @shmadul)\n"
-		"Based on the awesome work of naehrwert, st4rk\n"
-		"Thanks to: derrek, nedwill, plutoo, shuffle2, smea, thexyz, yellows8\n"
-		"Greetings to: fincs, hexkyz, SciresM, Shiny Quagsire, WinterMute\n"
-		"Open source and free packages used:\n"
-		" - FatFs R0.13a (Copyright (C) 2017, ChaN)\n"
-		" - bcl-1.2.0 (Copyright (c) 2003-2006 Marcus Geelnard)\n\n";
-
-	gfx_clear(&gfx_ctxt, 0xFF000000);
-	gfx_con_setpos(&gfx_con, 0, 0);
-
-	gfx_printf(&gfx_con, switchblade, 0xFFFFCC00, 0xFFFFFFFF, 
-		0xFFFFCC00, 0xFFCCFF00, 0xFFFFCC00, 0xFFFFFFFF);
+void draw_splash(gfx_con_t * con) {
+    FIL fp;
+    if (f_open(&fp, "splash.bin", FA_READ) != FR_OK) {
+        return;
+    }
+    char buffer[splash_size + 1];
+    f_read(&fp, buffer, splash_size, NULL);
+    memcpy((&gfx_ctxt)->fb, buffer + 1, splash_size);
+    f_close(&fp);
 }
 
 void launch_firmware()
 {
+    gfx_con_setpos(&gfx_con, 0, 0);
     if (sd_mount())
     {
+        draw_splash(&gfx_con);	
+
         if (!hos_launch())
             gfx_printf(&gfx_con, "%kFailed to launch firmware.%k\n", 0xFF0000FF, 0xFFFFFFFF);
     }
@@ -293,6 +287,5 @@ void ipl_main()
 	gfx_clear(&gfx_ctxt, 0xFF000000);
 	gfx_con_init(&gfx_con, &gfx_ctxt);
 
-	print_header();
 	launch_firmware();
 }
