@@ -240,15 +240,55 @@ int sd_mount()
 	return 0;
 }
 
+typedef struct flist {
+    TCHAR name[FF_LFN_BUF + 1];
+    struct flist * next;
+} flist_t;
+
 void draw_splash(gfx_con_t * con) {
     FIL fp;
-    if (f_open(&fp, "splash.bin", FA_READ) != FR_OK) {
+    char buffer[splash_size + 1];
+    if (f_open(&fp, "splash.bin", FA_READ) == FR_OK) {
+	f_read(&fp, buffer, splash_size, NULL);
+        memcpy((&gfx_ctxt)->fb, buffer + 1, splash_size);
+        f_close(&fp);
         return;
     }
-    char buffer[splash_size + 1];
-    f_read(&fp, buffer, splash_size, NULL);
-    memcpy((&gfx_ctxt)->fb, buffer + 1, splash_size);
-    f_close(&fp);
+    else {
+        FRESULT res;
+        DIR dp;
+        res = f_opendir(&dp, "splashes");
+
+        if (res != FR_OK) {
+            return;
+        }
+
+        int numberOfSplashes = 0;
+	FILINFO fno;
+        res = f_readdir(&dp, &fno);
+	flist_t * head = NULL;
+	flist_t * current = NULL;
+
+        while (res == FR_OK) {
+            if (fno.fname != "." && fno.fname != "..") {
+                if (current == NULL) {
+                    head = malloc(sizeof(flist_t));
+                    current = head;
+                } else {
+                    current->next = malloc(sizeof(flist_t));
+                    current = current->next;
+                }
+
+                memcpy(current->name, fno.fname, sizeof(fno.fname));
+                numberOfSplashes++;
+            }
+            
+            res = f_readdir(&dp, &fno);
+        }
+        f_closedir(&dp);
+
+        int splashChosen = rand() % numberOfSplashes;
+    }
 }
 
 void launch_firmware()
