@@ -6,10 +6,10 @@ CC = $(DEVKITARM)/bin/arm-none-eabi-gcc
 LD = $(DEVKITARM)/bin/arm-none-eabi-ld
 OBJCOPY = $(DEVKITARM)/bin/arm-none-eabi-objcopy
 
-TARGET := ipl
+TARGET := switchblade.bin
 BUILD := build
 BUILD_BINARY := build/bin
-SOURCEDIR := ipl
+SOURCEDIR := src
 OBJS = $(addprefix $(BUILD)/, \
 	start.o \
 	main.o \
@@ -37,6 +37,7 @@ OBJS = $(addprefix $(BUILD)/, \
 	se.o \
 	tsec.o \
 	uart.o \
+	splash.o \
 )
 OBJS += $(addprefix $(BUILD)/, diskio.o ff.o ffunicode.o)
 
@@ -57,7 +58,7 @@ $(BUILD_BINARY)/$(TARGET): $(BUILD)/$(TARGET).elf
 	$(OBJCOPY) -S -O binary $< $@
 
 $(BUILD)/$(TARGET).elf: $(OBJS)
-	$(CC) $(LDFLAGS) -T ipl/link.ld $^ -o $@
+	$(CC) $(LDFLAGS) -T $(SOURCEDIR)/link.ld $^ -o $@
 
 $(BUILD)/%.o: $(SOURCEDIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
