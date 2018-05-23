@@ -26,12 +26,6 @@
 #include "pinmux.h"
 #include "gpio.h"
 
-/*#include "gfx.h"
-extern gfx_ctxt_t gfx_ctxt;
-extern gfx_con_t gfx_con;
-#define DPRINTF(...) gfx_printf(&gfx_con, __VA_ARGS__)*/
-#define DPRINTF(...)
-
 /*! SCMMC controller base addresses. */
 static const u32 _sdmmc_bases[4] = {
 	0x700B0000,
@@ -657,8 +651,6 @@ static int _sdmmc_check_mask_interrupt(sdmmc_t *sdmmc, u16 *pout, u16 mask)
 	u16 norintsts = sdmmc->regs->norintsts;
 	u16 errintsts = sdmmc->regs->errintsts;
 
-	DPRINTF("norintsts %08X; errintsts %08X\n", norintsts, errintsts);
-
 	if (pout)
 		*pout = norintsts;
 
@@ -844,8 +836,6 @@ static int _sdmmc_execute_cmd_inner(sdmmc_t *sdmmc, sdmmc_cmd_t *cmd, sdmmc_req_
 	_sdmmc_parse_cmdbuf(sdmmc, cmd, is_data_present);
 
 	int res = _sdmmc_wait_request(sdmmc);
-	DPRINTF("rsp(%d): %08X, %08X, %08X, %08X\n", res, 
-		sdmmc->regs->rspreg0, sdmmc->regs->rspreg1, sdmmc->regs->rspreg2, sdmmc->regs->rspreg3);
 	if (res)
 	{
 		if (cmd->rsp_type)
