@@ -217,8 +217,6 @@ void config_hw()
 }
 
 //TODO: ugly.
-gfx_ctxt_t gfx_ctxt;
-gfx_con_t gfx_con;
 sdmmc_t sd_sdmmc;
 sdmmc_storage_t sd_storage;
 FATFS sd_fs;
@@ -239,25 +237,29 @@ int sd_mount()
 	return 0;
 }
 
-void launch_firmware()
+void launch_firmware(gfx_con_t * con)
 {
-	gfx_clear(&gfx_ctxt, 0xFF000000);
+	gfx_con_setcol(con, 0xFFFFFFFF, 1, 0xFF000000);
+	gfx_con_setpos(con, 0, 0);
 
     if (sd_mount())
     {
-        draw_splash(&gfx_con);	
+        con->enabled = draw_splash(con);	
 
-        if (!hos_launch())
-            gfx_printf(&gfx_con, "%kFailed to launch firmware.%k\n", 0xFF0000FF, 0xFFFFFFFF);
+        if (!hos_launch(con))
+             gfx_debug(con, error, "Failed to launch firmware.\n");
     }
     else
-        gfx_printf(&gfx_con, "%kFailed to mount SD card (make sure that it is inserted).%k\n", 0xFF0000FF, 0xFFFFFFFF);
+        gfx_debug(con, error, "Failed to mount SD card (make sure that it is inserted).\n");
 }
 
 extern void pivot_stack(u32 stack_top);
 
 void ipl_main()
 {
+	gfx_ctxt_t gfx_ctxt;
+	gfx_con_t gfx_con;
+	
 	config_hw();
 
 	//Pivot the stack so we have enough space.
@@ -265,16 +267,14 @@ void ipl_main()
 
 	//Tegra/Horizon configuration goes to 0x80000000+, package2 goes to 0xA9800000, we place our heap in between.
 	heap_init(0x90020000);
-
-	//uart_send(UART_C, (u8 *)0x40000000, 0x10000);
-	//uart_wait_idle(UART_C, UART_TX_IDLE);
 	
 	display_init();
-	//display_color_screen(0xAABBCCDD);
+
 	u32 *fb = display_init_framebuffer();
 	gfx_init_ctxt(&gfx_ctxt, fb, 720, 1280, 768);
 	gfx_clear(&gfx_ctxt, 0xFF000000);
 	gfx_con_init(&gfx_con, &gfx_ctxt);
+	gfx_clear(&gfx_ctxt, 0xFF000000);
 
-	launch_firmware();
+	launch_firmware(&gfx_con);
 }

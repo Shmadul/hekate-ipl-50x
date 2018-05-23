@@ -35,7 +35,10 @@ typedef struct _gfx_con_t
 	u32 fgcol;
 	int fillbg;
 	u32 bgcol;
+	bool enabled;
 } gfx_con_t;
+
+typedef enum { error, warning, ok, message } gfx_debug_type;
 
 void gfx_init_ctxt(gfx_ctxt_t *ctxt, u32 *fb, u32 width, u32 height, u32 stride);
 void gfx_clear(gfx_ctxt_t *ctxt, u32 color);
@@ -46,6 +49,7 @@ void gfx_con_setpos(gfx_con_t *con, u32 x, u32 y);
 void gfx_putc(gfx_con_t *con, char c);
 void gfx_puts(gfx_con_t *con, const char *s);
 void gfx_printf(gfx_con_t *con, const char *fmt, ...);
+void gfx_debug(gfx_con_t *con, gfx_debug_type type, const char *fmt, ...);
 void gfx_hexdump(gfx_con_t *con, u32 base, const u8 *buf, u32 len);
 
 void gfx_set_pixel(gfx_ctxt_t *ctxt, u32 x, u32 y, u32 color);

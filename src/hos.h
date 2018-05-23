@@ -18,7 +18,8 @@
 #define _HOS_H_
 
 #include "types.h"
+#include "gfx.h"
 
-int hos_launch();
+int hos_launch(gfx_con_t * con);
 
 #endif

@@ -31,6 +31,29 @@ typedef struct flist {
     int * length;
 } flist_t;
 
+int write_splash_to_framebuffer(gfx_con_t * con, char * filename) {
+    FIL fp;
+    char buffer[SPLASH_SIZE + 1];
+
+    // Open the file.
+    if (f_open(&fp, filename, FA_READ) == FR_OK) {
+        // Read the file to the buffer.
+	    f_read(&fp, buffer, SPLASH_SIZE, NULL);
+
+        // Copy the splash from our buffer to the framebuffer.
+        memcpy(con->gfx_ctxt->fb, buffer + 1, SPLASH_SIZE);
+
+        // Clean up.
+        f_close(&fp);
+        
+        // Success
+        return 1;
+    }
+
+    // Failure
+    return 0;
+}
+
 flist_t * read_splashes_from_directory(char * directory) {
     int numberOfSplashes = 0;
     flist_t * head = NULL;
@@ -77,6 +100,24 @@ flist_t * read_splashes_from_directory(char * directory) {
     return head;
 }
 
+void print_header(gfx_con_t * con) {
+    static const char switchblade[] =
+		"   _____         _ __       __    ____  __          __   \n\n"
+		"  / ___/      __(_) /______/ /_  / __ )/ /___ _____/ /__ \n\n"
+		"  \\__ \\ | /| / / / __/ ___/ __ \\/ __  / / __ `/ __  / _ \'\n\n"
+		" ___/ / |/ |/ / / /_/ /__/ / / / /_/ / / /_/ / /_/ /  __/\n\n"
+		"/____/|__/|__/_/\\__/\\___/_/ /_/_____/_/\\__,_/\\__,_/\\___/ \n\n"
+		"v1.0.5 Wicked Fast Hekate Booter Payload (@StevenMattera & @shmadul)\n\n\n"
+		"Based on the awesome work of naehrwert, st4rk\n"
+		"Thanks to: derrek, nedwill, plutoo, shuffle2, smea, thexyz, yellows8\n"
+		"Greetings to: fincs, hexkyz, SciresM, Shiny Quagsire, WinterMute\n"
+		"Open source and free packages used:\n"
+		" - FatFs R0.13a (Copyright (C) 2017, ChaN)\n"
+		" - bcl-1.2.0 (Copyright (c) 2003-2006 Marcus Geelnard)\n\n";
+
+	gfx_printf(con, switchblade);
+}
+
 char * randomly_choose_splash(flist_t * head, char * directory) {
     flist_t * current = NULL;
 
@@ -93,46 +134,51 @@ char * randomly_choose_splash(flist_t * head, char * directory) {
         }
     }
 
+    size_t directorySize = strlen(directory) * sizeof(char);
+    size_t slashSize = sizeof(char);
+    size_t nameSize = strlen(current->name) * sizeof(char);
+
     // Construct filename.
-    char filename[sizeof(current->name) + 9];
-    strcpy(filename, directory);
-    strcat(filename, "/");
-    strcat(filename, current->name);
+    char * filename = malloc(directorySize + slashSize + nameSize);
+    memcpy(filename, directory, directorySize);
+    memcpy(&filename[directorySize], "/", slashSize);
+    memcpy(&filename[directorySize + slashSize], current->name, nameSize);
+
+    return filename;
 }
 
-int write_splash_to_framebuffer(gfx_con_t * con, char * filename) {
-    FIL fp;
-    char buffer[SPLASH_SIZE + 1];
+void clean_up_file_list(flist_t * head) {
+    flist_t * current = head;
+    flist_t * next = NULL;
 
-    // Open the file.
-    if (f_open(&fp, filename, FA_READ) == FR_OK) {
-        // Read the file to the buffer.
-	    f_read(&fp, buffer, SPLASH_SIZE, NULL);
+    for (;;) {
+        if (next == NULL) {
+            return;
+        }
 
-        // Copy the splash from our buffer to the framebuffer.
-        memcpy(con->gfx_ctxt->fb, buffer + 1, SPLASH_SIZE);
-
-        // Clean up.
-        f_close(&fp);
-        
-        // Success
-        return 1;
+        current = next;
+        next = current->next;
+        free(current);
     }
-
-    // Failure
-    return 0;
 }
 
-void draw_splash(gfx_con_t * con) {
+bool draw_splash(gfx_con_t * con) {
     if (write_splash_to_framebuffer(con, "splash.bin") == 1) {
-        return;
+        return false;
     }
 
     flist_t * head = read_splashes_from_directory("splashes");
     if (head == NULL) {
-        return;
+        print_header(con);
+        return true;
     }
 
     char * filename = randomly_choose_splash(head, "splashes");
     write_splash_to_framebuffer(con, filename);
+
+    // Clean up.
+    clean_up_file_list(head);
+    free(filename);
+
+    return false;
 }

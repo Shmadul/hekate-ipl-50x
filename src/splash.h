@@ -20,6 +20,6 @@
 #include "types.h"
 #include "gfx.h"
 
-void draw_splash(gfx_con_t * con);
+bool draw_splash(gfx_con_t * con);
 
 #endif
