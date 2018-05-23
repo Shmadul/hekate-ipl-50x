@@ -31,7 +31,7 @@ typedef struct flist {
     int * length;
 } flist_t;
 
-int write_splash_to_framebuffer(gfx_con_t * con, char * filename) {
+bool write_splash_to_framebuffer(gfx_con_t * con, char * filename) {
     FIL fp;
     char buffer[SPLASH_SIZE + 1];
 
@@ -47,11 +47,11 @@ int write_splash_to_framebuffer(gfx_con_t * con, char * filename) {
         f_close(&fp);
         
         // Success
-        return 1;
+        return true;
     }
 
     // Failure
-    return 0;
+    return false;
 }
 
 flist_t * read_splashes_from_directory(char * directory) {
@@ -102,12 +102,7 @@ flist_t * read_splashes_from_directory(char * directory) {
 
 void print_header(gfx_con_t * con) {
     static const char switchblade[] =
-		"   _____         _ __       __    ____  __          __   \n\n"
-		"  / ___/      __(_) /______/ /_  / __ )/ /___ _____/ /__ \n\n"
-		"  \\__ \\ | /| / / / __/ ___/ __ \\/ __  / / __ `/ __  / _ \'\n\n"
-		" ___/ / |/ |/ / / /_/ /__/ / / / /_/ / / /_/ / /_/ /  __/\n\n"
-		"/____/|__/|__/_/\\__/\\___/_/ /_/_____/_/\\__,_/\\__,_/\\___/ \n\n"
-		"v1.0.5 Wicked Fast Hekate Booter Payload (@StevenMattera & @shmadul)\n\n\n"
+		"SwitchBlade v1.0.5 - By StevenMattera and Shmadul\n\n"
 		"Based on the awesome work of naehrwert, st4rk\n"
 		"Thanks to: derrek, nedwill, plutoo, shuffle2, smea, thexyz, yellows8\n"
 		"Greetings to: fincs, hexkyz, SciresM, Shiny Quagsire, WinterMute\n"
@@ -163,7 +158,7 @@ void clean_up_file_list(flist_t * head) {
 }
 
 bool draw_splash(gfx_con_t * con) {
-    if (write_splash_to_framebuffer(con, "splash.bin") == 1) {
+    if (write_splash_to_framebuffer(con, "splash.bin") == true) {
         return false;
     }
 
