@@ -2,6 +2,6 @@
 .vscode
 build/*.o
 build/*.elf
-build/bin/switchblade.bin
+build/bin/*.bin
 fusee.py
 intermezzo.bin
