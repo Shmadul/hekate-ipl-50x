@@ -13,6 +13,7 @@ SOURCEDIR := src
 OBJS = $(addprefix $(BUILD)/, \
 	start.o \
 	main.o \
+	btn.o \
 	clock.o \
 	cluster.o \
 	fuse.o \

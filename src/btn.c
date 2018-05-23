@@ -14,12 +14,29 @@
 * along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef _HOS_H_
-#define _HOS_H_
+#include "btn.h"
+#include "i2c.h"
+#include "gpio.h"
+#include "t210.h"
 
-#include "types.h"
-#include "gfx.h"
+u32 btn_read()
+{
+	u32 res = 0;
+	if (!gpio_read(GPIO_PORT_X, GPIO_PIN_7))
+		res |= BTN_VOL_DOWN;
+	if (!gpio_read(GPIO_PORT_X, GPIO_PIN_6))
+		res |= BTN_VOL_UP;
+	if (i2c_recv_byte(4, 0x3C, 0x15) & 0x4)
+		res |= BTN_POWER;
+	return res;
+}
 
-int hos_launch(gfx_con_t * con, bool hen);
-
-#endif
+u32 btn_wait()
+{
+	u32 res = 0, btn = btn_read();
+	do
+	{
+		res = btn_read();
+	} while (btn == res);
+	return res;
+}

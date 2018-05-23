@@ -261,14 +261,16 @@ static int _config_kip1(launch_ctxt_t *ctxt, const char *value, gfx_con_t * con)
 	return 1;
 }
 
-int hos_launch(gfx_con_t * con) 
+int hos_launch(gfx_con_t * con, bool hen) 
 {
 	launch_ctxt_t ctxt;
 	memset(&ctxt, 0, sizeof(launch_ctxt_t));
 	list_init(&ctxt.kip1_list);
 
-    _config_kip1(&ctxt, "loader.kip1", con);
-    _config_kip1(&ctxt, "sm.kip1", con);
+	if (hen == true) {
+		_config_kip1(&ctxt, "loader.kip1", con);
+		_config_kip1(&ctxt, "sm.kip1", con);
+	}
 
 	//Read package1 and the correct keyblob.
 	if (!_read_emmc_pkg1(&ctxt, con))
@@ -330,9 +332,11 @@ int hos_launch(gfx_con_t * con)
 		ctxt.kernel_size = pkg2_hdr->sec_size[PKG2_SEC_KERNEL];
 	}
 
-	//Merge extra KIP1s into loaded ones.
-	LIST_FOREACH_ENTRY(merge_kip_t, mki, &ctxt.kip1_list, link)
-		pkg2_merge_kip(&kip1_info, (pkg2_kip1_t *)mki->kip1);
+	if (hen == true) {
+		//Merge extra KIP1s into loaded ones.
+		LIST_FOREACH_ENTRY(merge_kip_t, mki, &ctxt.kip1_list, link)
+			pkg2_merge_kip(&kip1_info, (pkg2_kip1_t *)mki->kip1);
+	}
 
 	//Rebuild and encrypt package2.
 	pkg2_build_encrypt((void *)0xA9800000, ctxt.kernel, ctxt.kernel_size, &kip1_info);

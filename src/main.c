@@ -39,6 +39,7 @@
 #include "se_t210.h"
 #include "hos.h"
 #include "splash.h"
+#include "btn.h"
 
 void config_oscillators()
 {
@@ -240,13 +241,15 @@ int sd_mount()
 void launch_firmware(gfx_con_t * con)
 {
 	gfx_con_setcol(con, 0xFFFFFFFF, 1, 0xFF000000);
-	gfx_con_setpos(con, 0, 0);
+	gfx_con_setpos(con, 0, 1272);
 
     if (sd_mount())
     {
+		bool hen = (btn_read() == BTN_VOL_DOWN) ? false : true;
+
         con->enabled = draw_splash(con);	
 
-        if (!hos_launch(con))
+        if (!hos_launch(con, hen))
              gfx_debug(con, error, "Failed to launch firmware.\n");
     }
     else
