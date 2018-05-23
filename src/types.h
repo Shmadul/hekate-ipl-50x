@@ -26,6 +26,7 @@
 #define OFFSET_OF(t, m) ((u32)&((t *)NULL)->m)
 #define CONTAINER_OF(mp, t, mn) ((t *)((u32)mp - OFFSET_OF(t, mn)))
 
+typedef enum { false, true } bool;
 typedef unsigned char u8;
 typedef unsigned short u16;
 typedef unsigned int u32;
